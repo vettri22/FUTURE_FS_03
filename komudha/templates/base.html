@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="KOMUDHA Boutique - Premium Women's Fashion. Sarees, Kurtis, Lehengas, Gowns & more.">
+<title>{% block title %}KOMUDHA Boutique{% endblock %} - Premium Women's Fashion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- Announcement Bar -->
+<div class="announcement-bar">
+  🌸 Free Shipping on Orders Above ₹999 &nbsp;|&nbsp; Use Code <strong>WELCOME10</strong> for 10% Off &nbsp;|&nbsp;
+  <a href="/shop">Shop Now →</a>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar {% block navbar_class %}transparent{% endblock %}" id="main-navbar">
+  <div class="navbar-inner">
+    <!-- Logo -->
+    <a href="/" class="navbar-logo">KOMU<span>DHA</span></a>
+
+    <!-- Desktop Nav -->
+    <ul class="navbar-nav">
+      <li><a href="/" {% if request.endpoint=='index' %}class="active"{% endif %}>Home</a></li>
+      <li><a href="/shop" {% if request.endpoint=='shop' %}class="active"{% endif %}>Shop</a></li>
+      <li><a href="/shop?category=sarees">Sarees</a></li>
+      <li><a href="/shop?category=kurtis">Kurtis</a></li>
+      <li><a href="/shop?category=lehengas">Lehengas</a></li>
+      <li><a href="/shop?category=gowns">Gowns</a></li>
+    </ul>
+
+    <!-- Actions -->
+    <div class="navbar-actions">
+      <!-- Search -->
+      <div class="navbar-search-wrap">
+        <button class="navbar-icon-btn" data-search-toggle aria-label="Search">
+          <i class="fas fa-search"></i>
+        </button>
+        <input type="text" class="navbar-search-input" placeholder="Search products...">
+        <div class="search-suggestions" style="display:none"></div>
+      </div>
+
+      <!-- Wishlist -->
+      <a href="/wishlist" class="navbar-icon-btn" aria-label="Wishlist">
+        <i class="far fa-heart"></i>
+      </a>
+
+      <!-- Cart -->
+      <a href="/cart" class="navbar-icon-btn" aria-label="Cart" style="position:relative">
+        <i class="fas fa-shopping-bag"></i>
+        {% set cc = get_cart_count() %}
+        <span class="cart-badge cart-count-badge" {% if cc == 0 %}style="display:none"{% endif %}>{{ cc }}</span>
+      </a>
+
+      <!-- User -->
+      {% if session.user_id %}
+      <a href="/dashboard" class="navbar-icon-btn" aria-label="Profile">
+        <i class="far fa-user"></i>
+      </a>
+      {% else %}
+      <a href="/auth" class="btn btn-primary btn-sm">Login</a>
+      {% endif %}
+    </div>
+
+    <!-- Hamburger -->
+    <button class="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu">
+  <nav class="mobile-nav-links">
+    <a href="/">Home</a>
+    <a href="/shop">All Products</a>
+    <a href="/shop?category=sarees">Sarees</a>
+    <a href="/shop?category=kurtis">Kurtis</a>
+    <a href="/shop?category=lehengas">Lehengas</a>
+    <a href="/shop?category=gowns">Gowns</a>
+    <a href="/shop?category=salwar-suits">Salwar Suits</a>
+    <a href="/shop?category=dresses">Dresses</a>
+  </nav>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    {% if session.user_id %}
+    <a href="/dashboard" class="btn btn-primary">My Account</a>
+    <a href="/logout" class="btn btn-outline">Logout</a>
+    {% else %}
+    <a href="/auth" class="btn btn-primary">Login / Register</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div id="toast-container" style="position:fixed;top:88px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px;">
+    {% for cat, msg in messages %}
+    <div class="toast {{ 'success' if cat == 'success' else 'error' if cat == 'danger' else 'info' }}">
+      <span class="toast-icon">{{ '✓' if cat=='success' else '✕' if cat=='danger' else 'ℹ' }}</span>
+      <span>{{ msg }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+<!-- Main Content -->
+<main>{% block content %}{% endblock %}</main>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo">KOMU<span>DHA</span></div>
+        <p class="footer-desc">Curating timeless elegance for the modern Indian woman. Every piece tells a story of heritage, craftsmanship, and contemporary style.</p>
+        <div class="footer-socials">
+          <a href="{{ get_setting('instagram_url') or '#' }}" class="social-btn" target="_blank"><i class="fab fa-instagram"></i></a>
+          <a href="{{ get_setting('facebook_url') or '#' }}" class="social-btn" target="_blank"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-pinterest"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-heading">Shop</div>
+        <ul class="footer-links">
+          <li><a href="/shop?category=sarees">Sarees</a></li>
+          <li><a href="/shop?category=kurtis">Kurtis</a></li>
+          <li><a href="/shop?category=lehengas">Lehengas</a></li>
+          <li><a href="/shop?category=gowns">Gowns</a></li>
+          <li><a href="/shop?category=salwar-suits">Salwar Suits</a></li>
+          <li><a href="/shop">New Arrivals</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-heading">Help</div>
+        <ul class="footer-links">
+          <li><a href="#">Size Guide</a></li>
+          <li><a href="#">Return Policy</a></li>
+          <li><a href="#">Shipping Info</a></li>
+          <li><a href="#">Track Order</a></li>
+          <li><a href="#">Care Instructions</a></li>
+          <li><a href="#">FAQs</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-heading">Contact</div>
+        <div class="footer-contact">
+          <div class="footer-contact-item"><i class="fas fa-phone"></i><span>{{ get_setting('store_mobile') or '+91 98765 43210' }}</span></div>
+          <div class="footer-contact-item"><i class="fas fa-envelope"></i><span>{{ get_setting('store_email') or 'hello@komudha.com' }}</span></div>
+          <div class="footer-contact-item"><i class="fas fa-map-marker-alt"></i><span>{{ get_setting('store_address') or 'Chennai, Tamil Nadu' }}</span></div>
+          <div class="footer-contact-item"><i class="fas fa-clock"></i><span>Mon–Sat: 10am – 7pm</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© 2024 KOMUDHA Boutique. All rights reserved.</span>
+      <span>Made with ♡ for Indian Women</span>
+      <span>Privacy &nbsp;|&nbsp; Terms &nbsp;|&nbsp; Sitemap</span>
+    </div>
+  </div>
+</footer>
+
+<!-- WhatsApp Float -->
+<a href="https://wa.me/{{ get_setting('whatsapp_number') or '919876543210' }}?text=Hi! I need help with my order." class="floating-whatsapp" target="_blank" aria-label="WhatsApp Support">
+  <i class="fab fa-whatsapp"></i>
+</a>
+
+<!-- Stylist Chatbot Toggle -->
+<button class="floating-stylist" id="chatbot-toggle" aria-label="AI Fashion Stylist">
+  <i class="fas fa-magic"></i>
+</button>
+
+<!-- Chatbot Widget -->
+<div class="chatbot-widget" id="chatbot-widget">
+  <div class="chatbot-header">
+    <div class="chatbot-avatar">✨</div>
+    <div>
+      <div class="chatbot-name">Priya — AI Stylist</div>
+      <div class="chatbot-status">Online • Ask me anything!</div>
+    </div>
+    <button class="chatbot-close" id="chatbot-close">✕</button>
+  </div>
+  <div class="chatbot-messages" id="chatbot-messages">
+    <div class="chat-msg bot"><div class="chat-bubble">Hello gorgeous! 👋 I'm Priya, your personal fashion stylist. Ask me about outfit ideas, styling tips, or help finding the perfect look! 💕</div></div>
+  </div>
+  <div class="chatbot-input-area">
+    <input type="text" class="chatbot-input" id="chatbot-input" placeholder="Ask about styles, sizes, occasions...">
+    <button class="chatbot-send" id="chatbot-send">Send</button>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

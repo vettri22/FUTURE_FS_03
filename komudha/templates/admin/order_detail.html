@@ -1,0 +1,174 @@
+{% extends 'admin/base.html' %}
+{% block title %}Order #{{ order.order_number }}{% endblock %}
+{% block page_title %}Order #{{ order.order_number }}{% endblock %}
+{% block page_subtitle %}{{ order.created_at.strftime('%d %B %Y, %I:%M %p') }}{% endblock %}
+
+{% block content %}
+<!-- Header Actions -->
+<div style="display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;">
+  <a href="{{ url_for('admin_orders') }}" class="admin-btn admin-btn-outline admin-btn-sm">
+    <i class="fas fa-arrow-left"></i> Back to Orders
+  </a>
+  <span class="admin-badge badge-{{ order.status }}" style="padding:8px 16px;font-size:0.8rem;">
+    {{ order.status.title() }}
+  </span>
+  <span class="admin-badge badge-{{ 'paid' if order.payment_status=='paid' else 'unpaid' }}" style="padding:8px 16px;font-size:0.8rem;">
+    Payment: {{ order.payment_status.title() }}
+  </span>
+</div>
+
+<!-- Info Grid -->
+<div class="order-detail-grid" style="margin-bottom:24px;">
+  <!-- Order Details -->
+  <div class="admin-card">
+    <div class="order-info-label">Order Details</div>
+    {% for label, value in [
+      ('Order Number', '#' + order.order_number),
+      ('Date', order.created_at.strftime('%d %b %Y, %I:%M %p')),
+      ('Subtotal', '₹' + "{:,.2f}".format(order.subtotal)),
+      ('Discount', '-₹' + "{:,.2f}".format(order.discount or 0)),
+      ('Shipping', '₹' + "{:,.2f}".format(order.shipping_cost or 0)),
+      ('Total', '₹' + "{:,.2f}".format(order.total)),
+      ('Payment Method', order.payment_method or '—'),
+      ('Razorpay Order ID', order.razorpay_order_id or '—'),
+      ('Razorpay Payment ID', order.razorpay_payment_id or '—'),
+    ] %}
+    <div class="order-info-row">
+      <span style="color:var(--admin-muted);">{{ label }}</span>
+      <span style="font-weight:{% if label=='Total' %}700{% else %}500{% endif %};">{{ value }}</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Customer & Address -->
+  <div class="admin-card">
+    <div class="order-info-label">Customer Details</div>
+    <div class="order-info-row"><span style="color:var(--admin-muted);">Name</span><span style="font-weight:600;">{{ order.customer_name or '—' }}</span></div>
+    <div class="order-info-row"><span style="color:var(--admin-muted);">Mobile</span><span>{{ order.customer_mobile }}</span></div>
+    {% if order.ship_name %}
+    <div style="height:1px;background:var(--admin-border);margin:12px 0;"></div>
+    <div class="order-info-label" style="margin-bottom:10px;">Shipping Address</div>
+    <div style="font-size:0.84rem;line-height:1.8;">
+      <strong>{{ order.ship_name }}</strong><br>
+      {{ order.address_line1 }}{% if order.address_line2 %}, {{ order.address_line2 }}{% endif %}<br>
+      {{ order.city }}, {{ order.state }} – {{ order.pincode }}
+    </div>
+    {% endif %}
+    {% if order.tracking_number %}
+    <div style="height:1px;background:var(--admin-border);margin:12px 0;"></div>
+    <div class="order-info-row"><span style="color:var(--admin-muted);">Tracking #</span><span style="font-weight:600;color:var(--admin-info);">{{ order.tracking_number }}</span></div>
+    <div class="order-info-row"><span style="color:var(--admin-muted);">Partner</span><span>{{ order.shipping_partner or '—' }}</span></div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Order Items -->
+<div class="admin-card" style="margin-bottom:24px;">
+  <div class="admin-card-header">
+    <div class="admin-card-title">Order Items</div>
+    <span style="font-size:0.82rem;color:var(--admin-muted);">{{ items|length }} item{{ 's' if items|length != 1 }}</span>
+  </div>
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr><th>Product</th><th>Size</th><th>Color</th><th>Price</th><th>Qty</th><th>Total</th></tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="product-thumb">
+                {% if item.product_image %}
+                <img src="{{ url_for('static', filename='uploads/' + item.product_image) }}" alt="">
+                {% else %}<span>👗</span>{% endif %}
+              </div>
+              <span style="font-weight:600;">{{ item.product_name }}</span>
+            </div>
+          </td>
+          <td>{{ item.size or '—' }}</td>
+          <td>{{ item.color or '—' }}</td>
+          <td>₹{{ "{:,.2f}".format(item.price) }}</td>
+          <td style="text-align:center;font-weight:700;">{{ item.quantity }}</td>
+          <td style="font-weight:700;color:var(--admin-accent);">₹{{ "{:,.2f}".format(item.total) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr style="background:var(--admin-bg);">
+          <td colspan="5" style="text-align:right;font-weight:700;padding:14px 16px;">Order Total</td>
+          <td style="font-weight:700;font-size:1.05rem;color:var(--admin-accent);padding:14px 16px;">₹{{ "{:,.2f}".format(order.total) }}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- Update Status + Tracking -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+  <!-- Update Status -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div class="admin-card-title"><i class="fas fa-edit" style="color:var(--admin-accent);margin-right:8px;"></i>Update Order Status</div>
+    </div>
+    <div class="status-update-form">
+      <div class="form-group" style="flex:1;margin-bottom:0;">
+        <label class="form-label">New Status</label>
+        <select class="form-control admin-select" id="order-status-select">
+          {% for s in ['pending','confirmed','processing','shipped','delivered','cancelled','returned'] %}
+          <option value="{{ s }}" {% if s == order.status %}selected{% endif %}>{{ s.title() }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group" style="flex:1;margin-bottom:0;">
+        <label class="form-label">Note (optional)</label>
+        <input type="text" class="form-control" id="order-status-desc" placeholder="e.g. Dispatched via Blue Dart">
+      </div>
+      <div style="padding-top:22px;">
+        <button class="admin-btn admin-btn-primary" id="update-status-btn" data-order-id="{{ order.id }}">
+          <i class="fas fa-check"></i> Update
+        </button>
+      </div>
+    </div>
+    {% if not order.tracking_number %}
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--admin-border);">
+      <label class="form-label">Add Tracking Number</label>
+      <div style="display:flex;gap:8px;">
+        <input type="text" class="form-control" id="tracking-input" placeholder="e.g. BLUDRTA1234567">
+        <button class="admin-btn admin-btn-outline admin-btn-sm" onclick="addTracking()">Save</button>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Tracking History -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div class="admin-card-title"><i class="fas fa-route" style="color:var(--admin-accent);margin-right:8px;"></i>Order Timeline</div>
+    </div>
+    {% if tracking %}
+    <div class="admin-tracking-timeline">
+      {% for t in tracking %}
+      <div class="admin-track-step">
+        <div class="admin-track-dot"></div>
+        <div class="admin-track-status">{{ t.status }}</div>
+        {% if t.description %}<div class="admin-track-desc">{{ t.description }}</div>{% endif %}
+        <div class="admin-track-time">{{ t.created_at.strftime('%d %b %Y, %I:%M %p') }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><i class="fas fa-clock"></i><p>No tracking updates yet</p></div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+async function addTracking() {
+  const tracking = document.getElementById('tracking-input')?.value.trim();
+  if (!tracking) return;
+  // Simple page-reload after note — extend with API if needed
+  alert('Tracking saved (add DB call here): ' + tracking);
+}
+</script>
+{% endblock %}

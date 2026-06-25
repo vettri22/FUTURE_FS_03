@@ -1,0 +1,60 @@
+{% extends 'admin/base.html' %}
+{% block title %}Customers{% endblock %}
+{% block page_title %}Customers{% endblock %}
+{% block page_subtitle %}Manage your customer base{% endblock %}
+
+{% block content %}
+<div class="admin-toolbar">
+  <div class="admin-search-wrap">
+    <i class="fas fa-search admin-search-icon"></i>
+    <input type="text" class="admin-search" placeholder="Search customers…" data-search-table="customers-table">
+  </div>
+  <div style="font-size:0.82rem;color:var(--admin-muted);">{{ customers|length }} customers total</div>
+</div>
+
+<div class="admin-card">
+  <div class="admin-table-wrap">
+    <table class="admin-table" id="customers-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Mobile</th>
+          <th>Email</th>
+          <th>Orders</th>
+          <th>Total Spent</th>
+          <th>Joined</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in customers %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--admin-accent),var(--admin-gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.85rem;flex-shrink:0;">
+                {{ (c.name or c.mobile)[0].upper() }}
+              </div>
+              <span style="font-weight:600;">{{ c.name or '—' }}</span>
+            </div>
+          </td>
+          <td>{{ c.mobile }}</td>
+          <td>{{ c.email or '—' }}</td>
+          <td style="text-align:center;"><strong>{{ c.order_count }}</strong></td>
+          <td><strong style="color:var(--admin-accent);">₹{{ "{:,.0f}".format(c.total_spent) }}</strong></td>
+          <td>{{ c.created_at.strftime('%d %b %Y') }}</td>
+          <td>
+            <span class="admin-badge badge-{{ 'active' if c.is_active else 'inactive' }}">
+              {{ 'Active' if c.is_active else 'Inactive' }}
+            </span>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--admin-muted);">No customers yet</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

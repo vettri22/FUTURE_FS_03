@@ -1,0 +1,109 @@
+{% extends 'admin/base.html' %}
+{% block title %}Coupons{% endblock %}
+{% block page_title %}Coupons{% endblock %}
+{% block page_subtitle %}Create and manage discount coupons{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:1fr 400px;gap:24px;align-items:start;">
+
+  <!-- Coupons List -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div class="admin-card-title">All Coupons</div>
+      <span style="font-size:0.82rem;color:var(--admin-muted);">{{ coupons|length }} total</span>
+    </div>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr><th>Code</th><th>Type</th><th>Value</th><th>Min Order</th><th>Used/Limit</th><th>Expires</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for c in coupons %}
+          <tr>
+            <td>
+              <code style="background:rgba(183,110,121,0.1);color:var(--admin-accent);padding:4px 10px;border-radius:6px;font-weight:700;font-size:0.85rem;">{{ c.code }}</code>
+            </td>
+            <td>{{ c.discount_type.title() }}</td>
+            <td>
+              {% if c.discount_type == 'percentage' %}
+              <strong>{{ c.discount_value|int }}%</strong>
+              {% else %}
+              <strong>₹{{ "{:,.0f}".format(c.discount_value) }}</strong>
+              {% endif %}
+              {% if c.max_discount %}<div style="font-size:0.72rem;color:var(--admin-muted);">Max ₹{{ "{:,.0f}".format(c.max_discount) }}</div>{% endif %}
+            </td>
+            <td>₹{{ "{:,.0f}".format(c.min_order_amount) }}</td>
+            <td>
+              {{ c.used_count }} / {{ c.usage_limit or '∞' }}
+              {% if c.usage_limit %}
+              <div style="width:60px;height:4px;background:var(--admin-bg);border-radius:2px;margin-top:4px;">
+                <div style="height:100%;background:var(--admin-accent);border-radius:2px;width:{{ [((c.used_count/c.usage_limit)*100)|int, 100]|min }}%;"></div>
+              </div>
+              {% endif %}
+            </td>
+            <td style="font-size:0.8rem;">{{ c.expires_at.strftime('%d %b %Y') if c.expires_at else '—' }}</td>
+            <td>
+              <span class="admin-badge badge-{{ 'active' if c.is_active else 'inactive' }}">
+                {{ 'Active' if c.is_active else 'Inactive' }}
+              </span>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--admin-muted);">No coupons yet</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add Coupon -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div class="admin-card-title"><i class="fas fa-ticket-alt" style="color:var(--admin-accent);margin-right:8px;"></i>Create New Coupon</div>
+    </div>
+    <form method="POST" action="{{ url_for('admin_add_coupon') }}">
+      <div class="form-group">
+        <label class="form-label">Coupon Code <span class="form-required">*</span></label>
+        <input type="text" name="code" class="form-control" placeholder="e.g. SUMMER20" required style="text-transform:uppercase;font-weight:700;letter-spacing:0.1em;">
+        <div class="form-hint">Will be converted to uppercase automatically.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <input type="text" name="description" class="form-control" placeholder="Internal note about this coupon">
+      </div>
+      <div class="admin-form-grid">
+        <div class="form-group">
+          <label class="form-label">Discount Type <span class="form-required">*</span></label>
+          <select name="discount_type" class="form-control admin-select" required>
+            <option value="percentage">Percentage (%)</option>
+            <option value="fixed">Fixed Amount (₹)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Discount Value <span class="form-required">*</span></label>
+          <input type="number" name="discount_value" class="form-control" placeholder="e.g. 10 or 200" step="0.01" min="0" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Min Order Amount (₹)</label>
+          <input type="number" name="min_order_amount" class="form-control" placeholder="0" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Max Discount Cap (₹)</label>
+          <input type="number" name="max_discount" class="form-control" placeholder="Leave blank for no cap" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Usage Limit</label>
+          <input type="number" name="usage_limit" class="form-control" placeholder="Blank = unlimited" min="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Expiry Date</label>
+          <input type="datetime-local" name="expires_at" class="form-control">
+        </div>
+      </div>
+      <button type="submit" class="admin-btn admin-btn-primary" style="width:100%;justify-content:center;margin-top:8px;">
+        <i class="fas fa-save"></i> Create Coupon
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

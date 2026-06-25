@@ -1,0 +1,182 @@
+{% extends 'admin/base.html' %}
+{% block title %}Add Product{% endblock %}
+{% block page_title %}Add New Product{% endblock %}
+{% block page_subtitle %}Fill in the details to add a new product to the catalogue{% endblock %}
+
+{% block content %}
+<form method="POST" action="{{ url_for('admin_add_product') }}" enctype="multipart/form-data">
+
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start;">
+
+    <!-- Left Column -->
+    <div style="display:flex;flex-direction:column;gap:24px;">
+
+      <!-- Basic Info -->
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div class="admin-card-title"><i class="fas fa-info-circle" style="color:var(--admin-accent);margin-right:8px;"></i>Basic Information</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Product Name <span class="form-required">*</span></label>
+          <input type="text" name="name" class="form-control" placeholder="e.g. Royal Banarasi Silk Saree" required>
+        </div>
+        <div class="admin-form-grid">
+          <div class="form-group">
+            <label class="form-label">Category <span class="form-required">*</span></label>
+            <select name="category_id" class="form-control admin-select" required>
+              <option value="">Select Category</option>
+              {% for c in categories %}
+              <option value="{{ c.id }}">{{ c.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">SKU</label>
+            <input type="text" name="sku" class="form-control" placeholder="Auto-generated if empty">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Short Description</label>
+          <input type="text" name="short_description" class="form-control" placeholder="One-line product summary (shown on cards)" maxlength="250">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Full Description</label>
+          <textarea name="description" class="form-control" rows="5" placeholder="Detailed product description…"></textarea>
+        </div>
+        <div class="admin-form-grid">
+          <div class="form-group">
+            <label class="form-label">Fabric / Material</label>
+            <input type="text" name="fabric" class="form-control" placeholder="e.g. Pure Silk, Cotton Blend">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tags</label>
+            <input type="text" name="tags" class="form-control" placeholder="Comma-separated: wedding, festive, silk">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Care Instructions</label>
+          <textarea name="care_instructions" class="form-control" rows="2" placeholder="e.g. Dry clean only. Do not bleach."></textarea>
+        </div>
+      </div>
+
+      <!-- Pricing & Inventory -->
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div class="admin-card-title"><i class="fas fa-tags" style="color:var(--admin-accent);margin-right:8px;"></i>Pricing & Inventory</div>
+        </div>
+        <div class="admin-form-grid-3">
+          <div class="form-group">
+            <label class="form-label">MRP / Price (₹) <span class="form-required">*</span></label>
+            <input type="number" name="price" class="form-control" placeholder="0.00" step="0.01" min="0" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sale Price (₹)</label>
+            <input type="number" name="sale_price" class="form-control" placeholder="Leave empty if no sale" step="0.01" min="0">
+            <div class="form-hint">If set, this is the selling price shown to customers.</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Stock Quantity <span class="form-required">*</span></label>
+            <input type="number" name="stock_quantity" class="form-control" placeholder="0" min="0" value="0">
+          </div>
+        </div>
+      </div>
+
+      <!-- Sizes -->
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div class="admin-card-title"><i class="fas fa-ruler" style="color:var(--admin-accent);margin-right:8px;"></i>Available Sizes</div>
+          <button type="button" class="add-row-btn" id="add-size-btn"><i class="fas fa-plus"></i> Add Size</button>
+        </div>
+        <div class="size-color-builder" id="sizes-container">
+          <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;margin-bottom:4px;">
+            <span style="font-size:0.72rem;font-weight:700;color:var(--admin-muted);letter-spacing:0.1em;text-transform:uppercase;">Size Label</span>
+            <span style="font-size:0.72rem;font-weight:700;color:var(--admin-muted);letter-spacing:0.1em;text-transform:uppercase;">Stock for this Size</span>
+            <span></span>
+          </div>
+          <div class="size-row">
+            <input type="text" name="sizes" class="form-control" placeholder="e.g. S, M, L, XL, Free Size">
+            <input type="number" name="size_stocks" class="form-control" placeholder="Stock qty" min="0">
+            <button type="button" class="remove-row-btn"><i class="fas fa-times"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Colors -->
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div class="admin-card-title"><i class="fas fa-palette" style="color:var(--admin-accent);margin-right:8px;"></i>Color Variants</div>
+          <button type="button" class="add-row-btn" id="add-color-btn"><i class="fas fa-plus"></i> Add Color</button>
+        </div>
+        <div class="size-color-builder" id="colors-container">
+          <div style="display:grid;grid-template-columns:1fr 60px auto;gap:8px;align-items:center;margin-bottom:4px;">
+            <span style="font-size:0.72px;font-weight:700;color:var(--admin-muted);letter-spacing:0.1em;text-transform:uppercase;">Color Name</span>
+            <span style="font-size:0.72px;font-weight:700;color:var(--admin-muted);letter-spacing:0.1em;text-transform:uppercase;">Hex</span>
+            <span></span>
+          </div>
+          <div class="color-row">
+            <input type="text" name="color_names" class="form-control" placeholder="e.g. Royal Red, Deep Blue">
+            <input type="color" name="color_hexes" class="form-control" style="padding:4px;height:42px;" value="#B76E79">
+            <button type="button" class="remove-row-btn"><i class="fas fa-times"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div style="display:flex;flex-direction:column;gap:24px;">
+
+      <!-- Images -->
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div class="admin-card-title"><i class="fas fa-images" style="color:var(--admin-accent);margin-right:8px;"></i>Product Images</div>
+        </div>
+        <div class="upload-area" id="upload-drop-zone">
+          <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+          <div class="upload-text">
+            <strong>Click to upload</strong> or drag & drop<br>
+            <span style="font-size:0.75rem;">PNG, JPG, WEBP up to 16MB each. First image = primary.</span>
+          </div>
+        </div>
+        <input type="file" name="images" id="product-images" multiple accept="image/*" style="display:none;">
+        <div class="image-preview-grid" id="image-preview"></div>
+      </div>
+
+      <!-- Product Flags -->
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div class="admin-card-title"><i class="fas fa-flag" style="color:var(--admin-accent);margin-right:8px;"></i>Product Labels</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          {% for fname, flabel, fdesc in [
+            ('is_active','Active Product','Visible to customers'),
+            ('is_featured','Featured','Show on homepage featured section'),
+            ('is_new_arrival','New Arrival','Mark as new arrival'),
+            ('is_best_seller','Best Seller','Mark as best seller'),
+            ('is_trending','Trending','Show in trending section'),
+            ('is_flash_sale','Flash Sale','Add to flash sale')
+          ] %}
+          <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;padding:10px;border-radius:8px;transition:0.15s;" onmouseenter="this.style.background='rgba(183,110,121,0.05)'" onmouseleave="this.style.background='transparent'">
+            <input type="checkbox" name="{{ fname }}" value="1" {% if fname == 'is_active' %}checked{% endif %}
+                   style="accent-color:var(--admin-accent);width:16px;height:16px;margin-top:2px;flex-shrink:0;">
+            <div>
+              <div style="font-size:0.84rem;font-weight:600;">{{ flabel }}</div>
+              <div style="font-size:0.72rem;color:var(--admin-muted);">{{ fdesc }}</div>
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button type="submit" class="admin-btn admin-btn-primary admin-btn-lg" style="justify-content:center;">
+          <i class="fas fa-save"></i> Save Product
+        </button>
+        <a href="{{ url_for('admin_products') }}" class="admin-btn admin-btn-outline" style="justify-content:center;">
+          <i class="fas fa-times"></i> Cancel
+        </a>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

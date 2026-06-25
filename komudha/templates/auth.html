@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% block title %}Login / Register{% endblock %}
+{% block navbar_class %}scrolled{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <!-- Visual Side -->
+  <div class="auth-visual">
+    <div style="position:relative;z-index:1;text-align:center;">
+      <div class="auth-visual-logo">KOMU<span>DHA</span></div>
+      <p class="auth-visual-tagline">Curating elegance for the modern Indian woman. Your style, your story.</p>
+      <div style="margin-top:48px;display:flex;flex-direction:column;gap:20px;">
+        {% for icon, text in [('✨','Exclusive Members-Only Deals'),('🚚','Free Shipping on ₹999+'),('💕','Early Access to New Collections'),('🎁','Birthday Surprise Offers')] %}
+        <div style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.06);border-radius:12px;padding:14px 20px;">
+          <span style="font-size:1.4rem;">{{ icon }}</span>
+          <span style="color:rgba(255,255,255,0.8);font-size:0.88rem;">{{ text }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Side -->
+  <div class="auth-form-side">
+    <div class="auth-box">
+      <h1 class="auth-title">Welcome Back 👋</h1>
+      <p class="auth-subtitle">Sign in or create an account — no password needed!</p>
+
+      <!-- Tabs -->
+      <div class="auth-tab-btns">
+        <button class="auth-tab-btn active" id="tab-login" onclick="switchTab('login')">Login</button>
+        <button class="auth-tab-btn" id="tab-register" onclick="switchTab('register')">Register</button>
+      </div>
+
+      <!-- Step 1: Mobile Number -->
+      <div id="auth-step1">
+        <!-- Register name (hidden by default) -->
+        <div class="form-group" id="name-field" style="display:none;">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-control" id="auth-name" placeholder="Your full name">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Mobile Number</label>
+          <div class="mobile-input-wrap">
+            <div class="mobile-prefix">🇮🇳 +91</div>
+            <input type="tel" class="form-control" id="auth-mobile" placeholder="10-digit mobile number" maxlength="10" inputmode="numeric">
+          </div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;" id="send-otp-btn">
+          <i class="fas fa-paper-plane"></i> Send OTP
+        </button>
+        <div style="margin-top:20px;text-align:center;">
+          <p style="font-size:0.78rem;color:var(--medium);">By continuing, you agree to our <a href="#" style="color:var(--rose-gold);">Terms</a> & <a href="#" style="color:var(--rose-gold);">Privacy Policy</a></p>
+        </div>
+      </div>
+
+      <!-- Step 2: OTP -->
+      <div id="auth-step2" style="display:none;">
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="font-size:2.5rem;margin-bottom:12px;">📱</div>
+          <h3 style="font-family:var(--font-display);margin-bottom:6px;">Enter OTP</h3>
+          <p style="font-size:0.85rem;color:var(--medium);">We sent a 6-digit code to <strong id="show-mobile"></strong></p>
+          {% if config.DEV_MODE_OTP %}<p style="font-size:0.75rem;color:var(--rose-gold);margin-top:4px;">🛠️ Dev mode: Use OTP <strong>123456</strong></p>{% endif %}
+        </div>
+        <div class="otp-inputs" style="margin-bottom:24px;">
+          {% for i in range(6) %}
+          <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+          {% endfor %}
+        </div>
+        <button class="btn btn-primary" style="width:100%;" id="verify-otp-btn">
+          <i class="fas fa-check-circle"></i> Verify & Continue
+        </button>
+        <div class="otp-resend" style="margin-top:16px;">
+          Didn't receive it? <button id="resend-btn" onclick="resendOtp()">Resend OTP</button>
+          &nbsp;|&nbsp; <button onclick="backToStep1()" style="color:var(--medium);background:none;border:none;cursor:pointer;font-size:0.8rem;">Change Number</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentTab = 'login';
+let currentMobile = '';
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+  document.getElementById('name-field').style.display = tab === 'register' ? 'block' : 'none';
+  document.querySelector('.auth-title').textContent = tab === 'login' ? 'Welcome Back 👋' : 'Create Account ✨';
+  document.querySelector('.auth-subtitle').textContent = tab === 'login' ? 'Sign in with your mobile number' : 'Join KOMUDHA for exclusive benefits!';
+}
+
+async function sendOtp() {
+  const mobile = document.getElementById('auth-mobile').value.trim();
+  if (!mobile || mobile.length !== 10 || !/^\d+$/.test(mobile)) {
+    showAuthError('Please enter a valid 10-digit mobile number'); return;
+  }
+  currentMobile = mobile;
+  const btn = document.getElementById('send-otp-btn');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...'; btn.disabled = true;
+  const res = await fetch('/api/send-otp', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({mobile}) });
+  const data = await res.json();
+  btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send OTP'; btn.disabled = false;
+  if (data.success) {
+    document.getElementById('auth-step1').style.display = 'none';
+    document.getElementById('auth-step2').style.display = 'block';
+    document.getElementById('show-mobile').textContent = '+91 ' + mobile;
+    document.querySelector('.otp-digit').focus();
+  } else {
+    showAuthError(data.message);
+  }
+}
+
+async function verifyOtp() {
+  const digits = document.querySelectorAll('.otp-digit');
+  const otp = Array.from(digits).map(d => d.value).join('');
+  if (otp.length !== 6) { showAuthError('Enter all 6 digits'); return; }
+  const name = document.getElementById('auth-name')?.value || '';
+  const btn = document.getElementById('verify-otp-btn');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...'; btn.disabled = true;
+  const res = await fetch('/api/verify-otp', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({mobile: currentMobile, otp, name}) });
+  const data = await res.json();
+  btn.innerHTML = '<i class="fas fa-check-circle"></i> Verify & Continue'; btn.disabled = false;
+  if (data.success) {
+    btn.innerHTML = '<i class="fas fa-check"></i> Success! Redirecting...';
+    setTimeout(() => { window.location.href = data.redirect || '{{ request.args.get("next", "/") }}'; }, 600);
+  } else {
+    showAuthError(data.message);
+    digits.forEach(d => { d.value = ''; d.style.borderColor = 'var(--danger)'; });
+    digits[0].focus();
+  }
+}
+
+function backToStep1() {
+  document.getElementById('auth-step1').style.display = 'block';
+  document.getElementById('auth-step2').style.display = 'none';
+}
+
+function resendOtp() { sendOtp(); }
+
+function showAuthError(msg) {
+  let err = document.getElementById('auth-error');
+  if (!err) { err = document.createElement('div'); err.id = 'auth-error'; err.style.cssText = 'background:rgba(224,82,82,0.1);color:var(--danger);border-radius:8px;padding:10px 14px;font-size:0.82rem;margin-top:12px;'; document.querySelector('.auth-box').appendChild(err); }
+  err.textContent = msg;
+  setTimeout(() => err?.remove(), 4000);
+}
+
+// OTP digit auto-advance
+document.querySelectorAll('.otp-digit').forEach((d, i, all) => {
+  d.addEventListener('input', e => { if (d.value.length === 1 && all[i+1]) all[i+1].focus(); });
+  d.addEventListener('keydown', e => {
+    if (e.key === 'Backspace' && !d.value && all[i-1]) { all[i-1].focus(); all[i-1].value = ''; }
+    if (e.key === 'Enter') verifyOtp();
+  });
+  d.addEventListener('paste', e => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text').replace(/\D/g,'');
+    all.forEach((inp, idx) => { inp.value = text[idx] || ''; });
+    all[Math.min(text.length, 5)].focus();
+  });
+});
+
+document.getElementById('send-otp-btn').addEventListener('click', sendOtp);
+document.getElementById('verify-otp-btn').addEventListener('click', verifyOtp);
+document.getElementById('auth-mobile').addEventListener('keypress', e => { if (e.key === 'Enter') sendOtp(); });
+</script>
+{% endblock %}

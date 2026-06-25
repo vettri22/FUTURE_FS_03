@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}My Cart{% endblock %}
+{% block navbar_class %}scrolled{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <h1>Shopping Cart</h1>
+    <div class="breadcrumb" style="justify-content:center;margin-top:8px;">
+      <a href="/">Home</a><span class="breadcrumb-sep">/</span><span>Cart</span>
+    </div>
+  </div>
+</div>
+
+<div class="container section-pad">
+  {% if items %}
+  <div class="cart-layout">
+    <!-- Cart Items -->
+    <div>
+      <h2 style="font-family:var(--font-display);font-size:1.3rem;margin-bottom:24px;color:var(--dark);">
+        <i class="fas fa-shopping-bag" style="color:var(--rose-gold);margin-right:8px;"></i> {{ items|length }} Item{{ 's' if items|length != 1 }}
+      </h2>
+      {% for item in items %}
+      <div class="cart-item" data-cart-id="{{ item.id }}" data-price="{{ item.sale_price or item.price }}">
+        <div class="cart-item-img">
+          {% if item.image_path %}
+          <img src="{{ url_for('static', filename='uploads/' + item.image_path) }}" alt="{{ item.name }}">
+          {% else %}👗{% endif %}
+        </div>
+        <div>
+          <div class="cart-item-name">{{ item.name }}</div>
+          <div class="cart-item-variant">
+            {% if item.size %}Size: <strong>{{ item.size }}</strong>{% endif %}
+            {% if item.color %} &nbsp;|&nbsp; Color: <strong>{{ item.color }}</strong>{% endif %}
+          </div>
+          <div class="cart-item-price">
+            ₹{{ "{:,.2f}".format(item.sale_price or item.price) }}
+            {% if item.sale_price %}
+            <span style="text-decoration:line-through;color:var(--medium);font-size:0.82rem;font-weight:400;margin-left:6px;">₹{{ "{:,.2f}".format(item.price) }}</span>
+            {% endif %}
+          </div>
+          <div style="margin-top:10px;">
+            <div class="quantity-selector">
+              <button class="qty-btn qty-decrease">−</button>
+              <input type="number" class="qty-input" value="{{ item.quantity }}" min="0" max="{{ item.stock_quantity or 10 }}" readonly>
+              <button class="qty-btn qty-increase">+</button>
+            </div>
+          </div>
+          <button class="cart-item-remove"><i class="fas fa-trash-alt"></i> Remove</button>
+        </div>
+        <div style="text-align:right;">
+          <div class="cart-line-total" style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--rose-gold-dark);">
+            ₹{{ "{:,.2f}".format((item.sale_price or item.price) * item.quantity) }}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+      <!-- Continue Shopping -->
+      <div style="margin-top:20px;">
+        <a href="/shop" class="btn btn-outline btn-sm"><i class="fas fa-arrow-left"></i> Continue Shopping</a>
+      </div>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="cart-summary">
+      <h3 style="font-family:var(--font-display);font-size:1.2rem;margin-bottom:20px;">Order Summary</h3>
+
+      <!-- Coupon -->
+      <div class="coupon-input-row">
+        <input type="text" class="form-control" id="coupon-input" placeholder="Coupon code" style="text-transform:uppercase;">
+        <button class="btn btn-ghost btn-sm" id="apply-coupon-btn">Apply</button>
+      </div>
+
+      <div class="summary-row">
+        <span>Subtotal</span>
+        <span id="cart-subtotal">₹{{ "{:,.2f}".format(subtotal) }}</span>
+      </div>
+      <div class="summary-row" id="coupon-row" style="display:none;">
+        <span>Discount <span id="coupon-code-label" style="color:var(--rose-gold);font-size:0.75rem;"></span></span>
+        <span id="cart-discount" data-amount="0" style="color:var(--success);">-₹0.00</span>
+      </div>
+      <div class="summary-row">
+        <span>Shipping</span>
+        <span id="cart-shipping">{% if shipping == 0 %}<span style="color:var(--success);">FREE</span>{% else %}₹{{ shipping }}{% endif %}</span>
+      </div>
+      {% if shipping > 0 %}
+      <div style="background:var(--soft-pink);border-radius:8px;padding:10px 14px;font-size:0.78rem;color:var(--rose-gold);margin-bottom:12px;">
+        <i class="fas fa-truck"></i> Add ₹{{ "{:,.0f}".format(999 - subtotal) }} more for free shipping!
+      </div>
+      {% endif %}
+      <div class="summary-row" style="border-bottom:none;padding-top:16px;">
+        <span class="summary-total">Total</span>
+        <span class="summary-total" id="cart-total">₹{{ "{:,.2f}".format(total) }}</span>
+      </div>
+
+      <a href="/checkout" class="btn btn-primary btn-lg" style="width:100%;margin-top:20px;justify-content:center;">
+        <i class="fas fa-lock"></i> Proceed to Checkout
+      </a>
+
+      <div style="margin-top:16px;text-align:center;">
+        <div style="display:flex;justify-content:center;gap:12px;margin-bottom:8px;">
+          {% for icon, name in [('fa-cc-visa','Visa'),('fa-cc-mastercard','Mastercard'),('fa-cc-amex','Amex')] %}
+          <i class="fab {{ icon }}" style="font-size:1.6rem;color:var(--medium);"></i>
+          {% endfor %}
+          <i class="fas fa-university" style="font-size:1.3rem;color:var(--medium);margin-top:3px;"></i>
+        </div>
+        <p style="font-size:0.72rem;color:var(--medium);">Secured by Razorpay · SSL Encrypted</p>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+  <div style="text-align:center;padding:100px 24px;">
+    <div style="font-size:5rem;margin-bottom:20px;">🛍️</div>
+    <h2 style="font-family:var(--font-display);margin-bottom:12px;">Your cart is empty</h2>
+    <p style="color:var(--medium);margin-bottom:32px;">Looks like you haven't added anything yet. Let's fix that!</p>
+    <a href="/shop" class="btn btn-primary btn-lg">Start Shopping</a>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+// Coupon apply enhancement
+document.getElementById('apply-coupon-btn')?.addEventListener('click', async () => {
+  const code = document.getElementById('coupon-input')?.value.trim();
+  if (!code) return;
+  const btn = document.getElementById('apply-coupon-btn');
+  btn.textContent = 'Applying...'; btn.disabled = true;
+  const res = await fetch('/api/coupon/apply', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
+  const data = await res.json();
+  btn.textContent = 'Apply'; btn.disabled = false;
+  if (data.success) {
+    const discRow = document.getElementById('coupon-row');
+    const discEl = document.getElementById('cart-discount');
+    const codeLabel = document.getElementById('coupon-code-label');
+    discRow.style.display = 'flex';
+    discEl.textContent = '-₹' + data.discount.toFixed(2);
+    discEl.dataset.amount = data.discount;
+    codeLabel.textContent = '(' + code + ')';
+    // recalc
+    const subtotal = parseFloat(document.getElementById('cart-subtotal').textContent.replace(/[₹,]/g,''));
+    const shipping = {{ shipping }};
+    const total = subtotal - data.discount + shipping;
+    document.getElementById('cart-total').textContent = '₹' + total.toLocaleString('en-IN',{minimumFractionDigits:2});
+    // success toast
+    if (window.Toast) Toast.show(data.message, 'success');
+    else alert(data.message);
+  } else {
+    if (window.Toast) Toast.show(data.message, 'error');
+    else alert(data.message);
+  }
+});
+</script>
+{% endblock %}

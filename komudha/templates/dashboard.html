@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %}My Account{% endblock %}
+{% block navbar_class %}scrolled{% endblock %}
+{% block content %}
+<div class="page-hero">
+  <div class="container"><h1>My Account</h1></div>
+</div>
+<div class="container section-pad">
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+      <div class="dash-user-avatar">{{ (user.name or user.mobile)[0].upper() }}</div>
+      <div class="dash-user-name">{{ user.name or 'Welcome!' }}</div>
+      <div class="dash-user-mobile">+91 {{ user.mobile }}</div>
+      <nav>
+        <a href="/dashboard" class="dash-nav-link active"><i class="fas fa-th-large"></i> Dashboard</a>
+        <a href="/dashboard/orders" class="dash-nav-link"><i class="fas fa-shopping-bag"></i> My Orders</a>
+        <a href="/wishlist" class="dash-nav-link"><i class="fas fa-heart"></i> Wishlist</a>
+        <a href="/dashboard" class="dash-nav-link"><i class="fas fa-map-marker-alt"></i> Addresses</a>
+        <a href="/dashboard" class="dash-nav-link"><i class="fas fa-user-edit"></i> Profile</a>
+        <a href="/logout" class="dash-nav-link" style="color:var(--danger);margin-top:16px;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+      </nav>
+    </aside>
+
+    <!-- Main -->
+    <div>
+      <!-- Stats -->
+      <div class="stat-cards">
+        <div class="stat-card">
+          <div class="stat-icon">🛍️</div>
+          <div class="stat-label">Total Orders</div>
+          <div class="stat-value">{{ orders|length }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">❤️</div>
+          <div class="stat-label">Wishlist Items</div>
+          <div class="stat-value">{{ get_wishlist_ids()|length }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏠</div>
+          <div class="stat-label">Saved Addresses</div>
+          <div class="stat-value">{{ addresses|length }}</div>
+        </div>
+      </div>
+
+      <!-- Profile Edit -->
+      <div style="background:#fff;border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-sm);margin-bottom:24px;">
+        <h3 style="font-family:var(--font-display);font-size:1.1rem;margin-bottom:20px;">Profile Details</h3>
+        <form id="profile-form" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" name="name" class="form-control" value="{{ user.name or '' }}" placeholder="Your name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" name="email" class="form-control" value="{{ user.email or '' }}" placeholder="your@email.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mobile Number</label>
+            <input type="text" class="form-control" value="+91 {{ user.mobile }}" disabled style="opacity:0.6;">
+          </div>
+          <div style="display:flex;align-items:flex-end;">
+            <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Recent Orders -->
+      {% if orders %}
+      <div style="background:#fff;border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-sm);margin-bottom:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <h3 style="font-family:var(--font-display);font-size:1.1rem;">Recent Orders</h3>
+          <a href="/dashboard/orders" style="font-size:0.82rem;color:var(--rose-gold);">View All →</a>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="order-table">
+            <thead><tr><th>Order #</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              {% for o in orders %}
+              <tr>
+                <td><strong>#{{ o.order_number }}</strong></td>
+                <td>{{ o.created_at.strftime('%d %b %Y') }}</td>
+                <td>{{ o.item_count }} item{{ 's' if o.item_count != 1 }}</td>
+                <td style="font-weight:700;">₹{{ "{:,.0f}".format(o.total) }}</td>
+                <td><span class="order-status status-{{ o.status }}">{{ o.status.title() }}</span></td>
+                <td><a href="/dashboard/order/{{ o.id }}" style="font-size:0.78rem;color:var(--rose-gold);">View →</a></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Recently Viewed -->
+      {% if recently_viewed %}
+      <div style="background:#fff;border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-sm);">
+        <h3 style="font-family:var(--font-display);font-size:1.1rem;margin-bottom:20px;">Recently Viewed</h3>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+          {% for p in recently_viewed %}
+          <a href="/product/{{ p.slug }}" class="product-card" style="text-decoration:none;">
+            <div class="product-img-wrap">
+              {% if p.image_path %}<img src="{{ url_for('static', filename='uploads/' + p.image_path) }}" alt="{{ p.name }}" loading="lazy">{% else %}<div class="product-img-placeholder">👗</div>{% endif %}
+            </div>
+            <div class="product-info">
+              <div class="product-name" style="font-size:0.82rem;">{{ p.name }}</div>
+              <div class="product-price"><span class="price-current" style="font-size:0.9rem;">₹{{ "{:,.0f}".format(p.sale_price or p.price) }}</span></div>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

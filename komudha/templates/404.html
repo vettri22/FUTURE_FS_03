@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Page Not Found{% endblock %}
+{% block navbar_class %}scrolled{% endblock %}
+{% block content %}
+<div style="min-height:80vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:40px 24px;">
+  <div>
+    <div style="font-size:6rem;margin-bottom:16px;">🌸</div>
+    <h1 style="font-family:var(--font-display);font-size:5rem;color:var(--rose-gold);margin-bottom:0;">404</h1>
+    <h2 style="font-family:var(--font-display);font-size:1.8rem;margin-bottom:12px;">Page Not Found</h2>
+    <p style="color:var(--medium);max-width:400px;margin:0 auto 32px;">Oops! The page you're looking for seems to have wandered off our runway.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a href="/" class="btn btn-primary">Go Home</a>
+      <a href="/shop" class="btn btn-outline">Shop Now</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}My Wishlist{% endblock %}
+{% block navbar_class %}scrolled{% endblock %}
+{% block content %}
+<div class="page-hero"><div class="container"><h1>My Wishlist ♡</h1></div></div>
+<div class="container section-pad">
+  {% if items %}
+  <div class="products-grid" style="grid-template-columns:repeat(4,1fr);">
+    {% for p in items %}
+    <div class="product-card">
+      <div class="product-img-wrap">
+        {% if p.image_path %}<img src="{{ url_for('static', filename='uploads/' + p.image_path) }}" alt="{{ p.name }}" loading="lazy">{% else %}<div class="product-img-placeholder">👗</div>{% endif %}
+        <div class="product-actions" style="opacity:1;transform:none;">
+          <button class="product-action-btn active" data-quick-wishlist data-product-id="{{ p.id }}" title="Remove from Wishlist"><i class="fas fa-heart"></i></button>
+        </div>
+        <div class="quick-add-btn" data-product-id="{{ p.id }}" data-href="/product/{{ p.slug }}">Add to Cart</div>
+      </div>
+      <a href="/product/{{ p.slug }}">
+        <div class="product-info">
+          <div class="product-name">{{ p.name }}</div>
+          <div class="product-price">
+            <span class="price-current">₹{{ "{:,.0f}".format(p.sale_price or p.price) }}</span>
+            {% if p.sale_price %}<span class="price-original">₹{{ "{:,.0f}".format(p.price) }}</span>{% endif %}
+          </div>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:80px 24px;">
+    <div style="font-size:4rem;margin-bottom:16px;">💕</div>
+    <h3 style="font-family:var(--font-display);margin-bottom:12px;">Your wishlist is empty</h3>
+    <p style="color:var(--medium);margin-bottom:28px;">Save your favourite pieces here to revisit later!</p>
+    <a href="/shop" class="btn btn-primary">Explore Collection</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends 'admin/base.html' %}
+{% block title %}Settings{% endblock %}
+{% block page_title %}Store Settings{% endblock %}
+{% block page_subtitle %}Configure your store preferences{% endblock %}
+
+{% block content %}
+<form method="POST" action="{{ url_for('admin_settings') }}">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+
+    <!-- Store Info -->
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <div class="admin-card-title"><i class="fas fa-store" style="color:var(--admin-accent);margin-right:8px;"></i>Store Information</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Store Name</label>
+        <input type="text" name="store_name" class="form-control" value="{{ settings.get('store_name','KOMUDHA Boutique') }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Store Email</label>
+        <input type="email" name="store_email" class="form-control" value="{{ settings.get('store_email','') }}" placeholder="hello@komudha.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Store Mobile</label>
+        <input type="text" name="store_mobile" class="form-control" value="{{ settings.get('store_mobile','') }}" placeholder="+91 98765 43210">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Store Address</label>
+        <textarea name="store_address" class="form-control" rows="2" placeholder="Your store address">{{ settings.get('store_address','') }}</textarea>
+      </div>
+    </div>
+
+    <!-- Shipping -->
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <div class="admin-card-title"><i class="fas fa-truck" style="color:var(--admin-accent);margin-right:8px;"></i>Shipping Settings</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Standard Shipping Charge (₹)</label>
+        <input type="number" name="shipping_charge" class="form-control" value="{{ settings.get('shipping_charge','99') }}" min="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Free Shipping Above (₹)</label>
+        <input type="number" name="free_shipping_above" class="form-control" value="{{ settings.get('free_shipping_above','999') }}" min="0">
+        <div class="form-hint">Orders above this amount get free shipping.</div>
+      </div>
+      <div class="admin-card-header" style="margin-top:20px;padding-top:20px;border-top:1px solid var(--admin-border);">
+        <div class="admin-card-title"><i class="fab fa-whatsapp" style="color:#25D366;margin-right:8px;"></i>WhatsApp Support</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">WhatsApp Number (with country code)</label>
+        <input type="text" name="whatsapp_number" class="form-control" value="{{ settings.get('whatsapp_number','919876543210') }}" placeholder="919876543210">
+        <div class="form-hint">Include country code without + (e.g. 919876543210 for India)</div>
+      </div>
+    </div>
+
+    <!-- Payment Gateway -->
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <div class="admin-card-title"><i class="fas fa-credit-card" style="color:var(--admin-accent);margin-right:8px;"></i>Razorpay Payment Gateway</div>
+      </div>
+      <div class="admin-alert admin-alert-info" style="margin-bottom:16px;">
+        <i class="fas fa-info-circle"></i>
+        Get your API keys from <a href="https://razorpay.com" target="_blank" style="color:var(--admin-accent);font-weight:600;">razorpay.com</a> → Settings → API Keys
+      </div>
+      <div class="form-group">
+        <label class="form-label">Razorpay Key ID</label>
+        <input type="text" name="razorpay_key_id" class="form-control" value="{{ settings.get('razorpay_key_id','') }}" placeholder="rzp_test_xxxxxxxxxxxx">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Razorpay Key Secret</label>
+        <input type="password" name="razorpay_key_secret" class="form-control" placeholder="Leave blank to keep existing" autocomplete="off">
+        <div class="form-hint">Leave blank to keep the existing secret key.</div>
+      </div>
+    </div>
+
+    <!-- Social Media -->
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <div class="admin-card-title"><i class="fas fa-share-alt" style="color:var(--admin-accent);margin-right:8px;"></i>Social Media Links</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fab fa-instagram" style="color:#E1306C;margin-right:6px;"></i>Instagram URL</label>
+        <input type="url" name="instagram_url" class="form-control" value="{{ settings.get('instagram_url','') }}" placeholder="https://instagram.com/komudha">
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fab fa-facebook-f" style="color:#1877F2;margin-right:6px;"></i>Facebook URL</label>
+        <input type="url" name="facebook_url" class="form-control" value="{{ settings.get('facebook_url','') }}" placeholder="https://facebook.com/komudha">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Admin Mobile Number</label>
+        <input type="text" name="admin_mobile" class="form-control" value="{{ settings.get('admin_mobile','') }}" placeholder="9876543210">
+        <div class="form-hint">Only this number can log into the admin panel.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:24px;display:flex;gap:12px;">
+    <button type="submit" class="admin-btn admin-btn-primary admin-btn-lg">
+      <i class="fas fa-save"></i> Save All Settings
+    </button>
+    <button type="reset" class="admin-btn admin-btn-outline admin-btn-lg">
+      <i class="fas fa-undo"></i> Reset
+    </button>
+  </div>
+</form>
+{% endblock %}

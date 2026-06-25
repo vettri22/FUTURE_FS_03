@@ -1,0 +1,169 @@
+{% extends 'admin/base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Welcome back! Here's what's happening today.{% endblock %}
+
+{% block content %}
+
+<!-- Stat Cards -->
+<div class="admin-stats-grid">
+  <div class="admin-stat-card stat-rose">
+    <div class="stat-top">
+      <div class="stat-icon-circle"><i class="fas fa-rupee-sign"></i></div>
+      <span class="stat-change up">↑ Live</span>
+    </div>
+    <div class="stat-num">₹{{ "{:,.0f}".format(stats.total_revenue) }}</div>
+    <div class="stat-lbl">Total Revenue</div>
+  </div>
+  <div class="admin-stat-card stat-gold">
+    <div class="stat-top">
+      <div class="stat-icon-circle"><i class="fas fa-shopping-bag"></i></div>
+      <span class="stat-change up">↑ All Time</span>
+    </div>
+    <div class="stat-num">{{ stats.total_orders }}</div>
+    <div class="stat-lbl">Total Orders</div>
+  </div>
+  <div class="admin-stat-card stat-green">
+    <div class="stat-top">
+      <div class="stat-icon-circle"><i class="fas fa-users"></i></div>
+      <span class="stat-change up">↑ Growing</span>
+    </div>
+    <div class="stat-num">{{ stats.total_customers }}</div>
+    <div class="stat-lbl">Total Customers</div>
+  </div>
+  <div class="admin-stat-card stat-blue">
+    <div class="stat-top">
+      <div class="stat-icon-circle"><i class="fas fa-tshirt"></i></div>
+    </div>
+    <div class="stat-num">{{ stats.total_products }}</div>
+    <div class="stat-lbl">Active Products</div>
+  </div>
+  <div class="admin-stat-card stat-purple">
+    <div class="stat-top">
+      <div class="stat-icon-circle"><i class="fas fa-clock"></i></div>
+      <span class="stat-change down">Pending</span>
+    </div>
+    <div class="stat-num">{{ stats.pending_orders }}</div>
+    <div class="stat-lbl">Pending Orders</div>
+  </div>
+  <div class="admin-stat-card stat-orange">
+    <div class="stat-top">
+      <div class="stat-icon-circle"><i class="fas fa-calendar-day"></i></div>
+      <span class="stat-change up">Today</span>
+    </div>
+    <div class="stat-num">{{ stats.today_orders }}</div>
+    <div class="stat-lbl">Today's Orders</div>
+  </div>
+  <div class="admin-stat-card stat-rose" style="grid-column:span 2;">
+    <div class="stat-top">
+      <div class="stat-icon-circle"><i class="fas fa-chart-line"></i></div>
+      <span class="stat-change up">↑ Today</span>
+    </div>
+    <div class="stat-num">₹{{ "{:,.0f}".format(stats.today_revenue) }}</div>
+    <div class="stat-lbl">Today's Revenue</div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div class="dashboard-grid" style="margin-bottom:24px;">
+  <!-- Revenue Chart -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div>
+        <div class="admin-card-title">Monthly Revenue</div>
+        <div class="admin-card-subtitle">Last 12 months performance</div>
+      </div>
+      <span class="admin-badge" style="background:rgba(183,110,121,0.1);color:var(--admin-accent);">Revenue</span>
+    </div>
+    <div class="chart-container">
+      <canvas id="revenue-chart"
+        data-labels='{{ monthly_revenue | map(attribute="month") | list | tojson }}'
+        data-values='{{ monthly_revenue | map(attribute="revenue") | list | tojson }}'></canvas>
+    </div>
+  </div>
+
+  <!-- Top Products -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div>
+        <div class="admin-card-title">Top Products</div>
+        <div class="admin-card-subtitle">By units sold</div>
+      </div>
+    </div>
+    <div class="top-products-list">
+      {% set max_sold = top_products[0].sold if top_products else 1 %}
+      {% for p in top_products %}
+      <div class="top-product-item">
+        <div class="top-product-rank {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% endif %}">{{ loop.index }}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="top-product-name">{{ p.name[:30] }}{% if p.name|length > 30 %}…{% endif %}</div>
+          <div class="top-product-sold">{{ p.sold }} units sold</div>
+          <div class="top-product-bar">
+            <div class="top-product-bar-fill" style="width:{{ ((p.sold / max_sold) * 100)|int }}%;"></div>
+          </div>
+        </div>
+        <div class="top-product-rev">₹{{ "{:,.0f}".format(p.revenue) }}</div>
+      </div>
+      {% else %}
+      <div class="empty-state"><i class="fas fa-chart-bar"></i><p>No sales data yet</p></div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Recent Orders -->
+<div class="admin-card">
+  <div class="admin-card-header">
+    <div>
+      <div class="admin-card-title">Recent Orders</div>
+      <div class="admin-card-subtitle">Latest {{ recent_orders|length }} orders</div>
+    </div>
+    <a href="{{ url_for('admin_orders') }}" class="admin-btn admin-btn-outline admin-btn-sm">
+      <i class="fas fa-arrow-right"></i> View All
+    </a>
+  </div>
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Order #</th>
+          <th>Customer</th>
+          <th>Mobile</th>
+          <th>Date</th>
+          <th>Amount</th>
+          <th>Payment</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in recent_orders %}
+        <tr>
+          <td><strong>#{{ o.order_number }}</strong></td>
+          <td>{{ o.customer_name or '—' }}</td>
+          <td>{{ o.customer_mobile }}</td>
+          <td>{{ o.created_at.strftime('%d %b %Y') }}</td>
+          <td><strong>₹{{ "{:,.0f}".format(o.total) }}</strong></td>
+          <td>
+            <span class="admin-badge badge-{{ 'paid' if o.payment_status=='paid' else 'unpaid' }}">
+              {{ o.payment_status.title() }}
+            </span>
+          </td>
+          <td>
+            <span class="admin-badge badge-{{ o.status }}">{{ o.status.title() }}</span>
+          </td>
+          <td>
+            <a href="{{ url_for('admin_order_detail', order_id=o.id) }}" class="tbl-btn tbl-btn-view">
+              <i class="fas fa-eye"></i> View
+            </a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" style="text-align:center;padding:32px;color:var(--admin-muted);">No orders yet</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

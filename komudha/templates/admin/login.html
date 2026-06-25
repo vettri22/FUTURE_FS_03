@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Login — KOMUDHA Boutique</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body style="margin:0;font-family:'Poppins',sans-serif;">
+<div class="admin-login-page">
+  <div class="admin-login-box">
+    <div class="admin-login-logo">KOMU<span>DHA</span></div>
+    <div class="admin-login-badge">Admin Portal</div>
+    <p class="admin-login-title">Sign in with your registered admin mobile number</p>
+
+    <!-- Step 1: Mobile -->
+    <div id="admin-step1">
+      <input type="tel" class="admin-login-input" id="admin-mobile" placeholder="Admin Mobile Number" maxlength="10" inputmode="numeric">
+      <button class="admin-login-btn" id="admin-send-otp">
+        <i class="fas fa-paper-plane"></i> Send OTP
+      </button>
+      <p class="admin-login-note">Only authorised admin numbers can access this panel.</p>
+    </div>
+
+    <!-- Step 2: OTP -->
+    <div id="admin-step2" style="display:none;">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:2rem;margin-bottom:8px;">📱</div>
+        <p style="color:rgba(255,255,255,0.7);font-size:0.85rem;">Enter the 6-digit OTP sent to your mobile</p>
+        <p style="color:rgba(183,110,121,0.9);font-size:0.78rem;margin-top:4px;">Dev mode: Use OTP <strong>123456</strong></p>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-bottom:20px;">
+        {% for i in range(6) %}
+        <input type="text" class="admin-otp-digit" maxlength="1" inputmode="numeric"
+               style="width:44px;height:52px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:1.4rem;font-weight:700;text-align:center;outline:none;transition:0.2s;font-family:'Playfair Display',serif;">
+        {% endfor %}
+      </div>
+      <button class="admin-login-btn" id="admin-verify-otp">
+        <i class="fas fa-check-circle"></i> Verify & Login
+      </button>
+      <p style="text-align:center;margin-top:14px;font-size:0.78rem;color:rgba(255,255,255,0.4);">
+        Didn't receive? <button id="admin-resend" style="background:none;border:none;color:rgba(183,110,121,0.8);cursor:pointer;font-size:0.78rem;">Resend OTP</button>
+        &nbsp;|&nbsp;
+        <button onclick="document.getElementById('admin-step1').style.display='block';document.getElementById('admin-step2').style.display='none';" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:0.78rem;">Change Number</button>
+      </p>
+    </div>
+
+    <div id="admin-error" style="display:none;background:rgba(224,82,82,0.15);border:1px solid rgba(224,82,82,0.3);border-radius:8px;padding:10px 14px;color:#FF7070;font-size:0.8rem;margin-top:14px;"></div>
+
+    <div style="margin-top:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
+      <a href="{{ url_for('index') }}" style="color:rgba(255,255,255,0.35);font-size:0.75rem;text-decoration:none;">
+        <i class="fas fa-arrow-left"></i> Back to Store
+      </a>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+<script>
+// OTP digit focus styling
+document.querySelectorAll('.admin-otp-digit').forEach(d => {
+  d.addEventListener('focus', () => d.style.borderColor = '#B76E79');
+  d.addEventListener('blur', () => d.style.borderColor = 'rgba(255,255,255,0.15)');
+});
+
+function showError(msg) {
+  const el = document.getElementById('admin-error');
+  el.textContent = msg; el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 4000);
+}
+</script>
+</body>
+</html>

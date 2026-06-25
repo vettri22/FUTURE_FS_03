@@ -1,0 +1,59 @@
+{% extends 'admin/base.html' %}
+{% block title %}Reviews{% endblock %}
+{% block page_title %}Reviews{% endblock %}
+{% block page_subtitle %}Moderate customer reviews{% endblock %}
+
+{% block content %}
+<div class="admin-toolbar">
+  <div class="admin-search-wrap">
+    <i class="fas fa-search admin-search-icon"></i>
+    <input type="text" class="admin-search" placeholder="Search reviews…" data-search-table="reviews-table">
+  </div>
+</div>
+
+<div class="admin-card">
+  <div class="admin-table-wrap">
+    <table class="admin-table" id="reviews-table">
+      <thead>
+        <tr><th>Customer</th><th>Product</th><th>Rating</th><th>Review</th><th>Date</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for r in reviews %}
+        <tr>
+          <td><strong>{{ r.user_name }}</strong></td>
+          <td style="font-size:0.82rem;max-width:150px;">{{ r.product_name[:30] }}{% if r.product_name|length > 30 %}…{% endif %}</td>
+          <td>
+            <div style="color:#F5A623;letter-spacing:2px;">{% for i in range(r.rating) %}★{% endfor %}{% for i in range(5-r.rating) %}☆{% endfor %}</div>
+            <div style="font-size:0.72rem;color:var(--admin-muted);">{{ r.rating }}/5</div>
+          </td>
+          <td style="max-width:220px;font-size:0.82rem;color:var(--admin-muted);">
+            {% if r.title %}<strong style="color:var(--admin-text);display:block;margin-bottom:2px;">{{ r.title }}</strong>{% endif %}
+            {{ (r.review or '—')[:80] }}{% if r.review and r.review|length > 80 %}…{% endif %}
+          </td>
+          <td style="white-space:nowrap;font-size:0.8rem;">{{ r.created_at.strftime('%d %b %Y') }}</td>
+          <td>
+            <span class="review-status admin-badge badge-{{ 'active' if r.is_approved else 'pending' }}">
+              {{ 'Approved' if r.is_approved else 'Pending' }}
+            </span>
+          </td>
+          <td>
+            <div class="table-actions">
+              {% if not r.is_approved %}
+              <button class="tbl-btn tbl-btn-approve" data-approve-review="{{ r.id }}">
+                <i class="fas fa-check"></i> Approve
+              </button>
+              {% endif %}
+              <button class="tbl-btn tbl-btn-delete" data-delete-review="{{ r.id }}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--admin-muted);">No reviews yet</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

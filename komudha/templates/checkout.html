@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+{% block title %}Checkout{% endblock %}
+{% block navbar_class %}scrolled{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <h1>Secure Checkout</h1>
+    <div style="display:flex;justify-content:center;gap:24px;margin-top:16px;flex-wrap:wrap;">
+      {% for n,label in enumerate(['Cart','Address','Payment','Confirmation'],1) %}
+      <div style="display:flex;align-items:center;gap:8px;font-size:0.82rem;">
+        <div style="width:28px;height:28px;border-radius:50%;background:{% if n<=2 %}var(--rose-gold){% else %}var(--border){% endif %};color:{% if n<=2 %}#fff{% else %}var(--medium){% endif %};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.78rem;">{{ n }}</div>
+        <span style="color:{% if n<=2 %}var(--charcoal){% else %}var(--medium){% endif %};">{{ label }}</span>
+        {% if not loop.last %}<span style="color:var(--border);">›</span>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="container section-pad">
+  <div style="display:grid;grid-template-columns:1fr 380px;gap:40px;align-items:start;" class="checkout-grid">
+
+    <!-- Left: Address -->
+    <div>
+      <div style="background:#fff;border-radius:var(--radius-lg);padding:32px;box-shadow:var(--shadow-sm);margin-bottom:24px;">
+        <h2 style="font-family:var(--font-display);font-size:1.3rem;margin-bottom:24px;"><i class="fas fa-map-marker-alt" style="color:var(--rose-gold);margin-right:8px;"></i> Delivery Address</h2>
+
+        {% if addresses %}
+        <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px;" id="address-list">
+          {% for addr in addresses %}
+          <label style="display:flex;gap:14px;border:2px solid {% if addr.is_default %}var(--rose-gold){% else %}var(--border){% endif %};border-radius:var(--radius);padding:16px;cursor:pointer;transition:border-color 0.2s;" class="address-option">
+            <input type="radio" name="address_id" value="{{ addr.id }}" {% if addr.is_default %}checked{% endif %} style="accent-color:var(--rose-gold);margin-top:3px;">
+            <div>
+              <div style="font-weight:700;margin-bottom:4px;">{{ addr.name }} <span style="font-weight:400;color:var(--medium);">· {{ addr.mobile }}</span></div>
+              <div style="font-size:0.85rem;color:var(--medium);line-height:1.6;">{{ addr.address_line1 }}{% if addr.address_line2 %}, {{ addr.address_line2 }}{% endif %}<br>{{ addr.city }}, {{ addr.state }} – {{ addr.pincode }}</div>
+              {% if addr.is_default %}<span style="font-size:0.7rem;background:var(--soft-pink);color:var(--rose-gold);padding:2px 8px;border-radius:999px;margin-top:6px;display:inline-block;">Default</span>{% endif %}
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Add New Address -->
+        <div id="add-address-toggle">
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('new-address-form').style.display='block';this.style.display='none';">
+            <i class="fas fa-plus"></i> Add New Address
+          </button>
+        </div>
+
+        <div id="new-address-form" style="{% if not addresses %}display:block{% else %}display:none{% endif %};margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+          <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:16px;">New Delivery Address</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div class="form-group">
+              <label class="form-label">Full Name <span style="color:var(--danger);">*</span></label>
+              <input type="text" class="form-control" id="addr-name" placeholder="Recipient name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mobile <span style="color:var(--danger);">*</span></label>
+              <input type="tel" class="form-control" id="addr-mobile" placeholder="10-digit number" maxlength="10">
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+              <label class="form-label">Address Line 1 <span style="color:var(--danger);">*</span></label>
+              <input type="text" class="form-control" id="addr-line1" placeholder="House no., Street, Area">
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+              <label class="form-label">Address Line 2</label>
+              <input type="text" class="form-control" id="addr-line2" placeholder="Landmark (optional)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">City <span style="color:var(--danger);">*</span></label>
+              <input type="text" class="form-control" id="addr-city" placeholder="City">
+            </div>
+            <div class="form-group">
+              <label class="form-label">State <span style="color:var(--danger);">*</span></label>
+              <select class="form-control form-select" id="addr-state">
+                <option value="">Select State</option>
+                {% for state in ['Andhra Pradesh','Assam','Bihar','Chhattisgarh','Delhi','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal'] %}
+                <option value="{{ state }}" {% if state == 'Tamil Nadu' %}selected{% endif %}>{{ state }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Pincode <span style="color:var(--danger);">*</span></label>
+              <input type="text" class="form-control" id="addr-pincode" placeholder="6-digit pincode" maxlength="6">
+            </div>
+            <div class="form-group" style="display:flex;align-items:center;gap:8px;padding-top:8px;">
+              <input type="checkbox" id="addr-default" style="accent-color:var(--rose-gold);width:16px;height:16px;">
+              <label for="addr-default" style="font-size:0.84rem;cursor:pointer;">Set as default address</label>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="saveNewAddress()"><i class="fas fa-save"></i> Save Address</button>
+        </div>
+      </div>
+
+      <!-- Payment Info -->
+      <div style="background:#fff;border-radius:var(--radius-lg);padding:32px;box-shadow:var(--shadow-sm);">
+        <h2 style="font-family:var(--font-display);font-size:1.3rem;margin-bottom:16px;"><i class="fas fa-lock" style="color:var(--rose-gold);margin-right:8px;"></i> Payment</h2>
+        <div style="background:var(--soft-pink);border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+          <i class="fas fa-shield-alt" style="color:var(--rose-gold);font-size:1.2rem;"></i>
+          <div>
+            <div style="font-weight:700;font-size:0.88rem;">100% Secure Payment via Razorpay</div>
+            <div style="font-size:0.78rem;color:var(--medium);">Your payment info is encrypted and never stored</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          {% for icon, label in [('fa-credit-card','Cards'),('fa-university','Net Banking'),('fa-mobile-alt','UPI'),('fa-wallet','Wallets')] %}
+          <div style="display:flex;align-items:center;gap:6px;background:var(--light-gray);padding:8px 14px;border-radius:8px;font-size:0.78rem;">
+            <i class="fas {{ icon }}" style="color:var(--rose-gold);"></i> {{ label }}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Order Summary -->
+    <div style="position:sticky;top:88px;">
+      <div class="cart-summary">
+        <h3 style="font-family:var(--font-display);font-size:1.2rem;margin-bottom:20px;">Order Summary</h3>
+        {% for item in items %}
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);">
+          <div style="width:52px;height:52px;border-radius:8px;background:var(--light-gray);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+            {% if item.image_path %}<img src="{{ url_for('static', filename='uploads/' + item.image_path) }}" alt="" style="width:100%;height:100%;object-fit:cover;">{% else %}👗{% endif %}
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:0.84rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ item.name }}</div>
+            <div style="font-size:0.75rem;color:var(--medium);">{% if item.size %}{{ item.size }}{% endif %}{% if item.color %} · {{ item.color }}{% endif %} × {{ item.quantity }}</div>
+          </div>
+          <div style="font-size:0.88rem;font-weight:700;color:var(--rose-gold-dark);white-space:nowrap;">₹{{ "{:,.0f}".format((item.sale_price or item.price) * item.quantity) }}</div>
+        </div>
+        {% endfor %}
+        <div class="summary-row"><span>Subtotal</span><span>₹{{ "{:,.2f}".format(subtotal) }}</span></div>
+        {% if discount > 0 %}<div class="summary-row"><span>Discount</span><span style="color:var(--success);">-₹{{ "{:,.2f}".format(discount) }}</span></div>{% endif %}
+        <div class="summary-row"><span>Shipping</span><span>{% if shipping == 0 %}<span style="color:var(--success);">FREE</span>{% else %}₹{{ shipping }}{% endif %}</span></div>
+        <div class="summary-row" style="border-bottom:none;padding-top:16px;">
+          <span class="summary-total">Total</span>
+          <span class="summary-total">₹{{ "{:,.2f}".format(total) }}</span>
+        </div>
+
+        <button class="btn btn-primary btn-lg" style="width:100%;margin-top:20px;justify-content:center;" id="pay-btn" onclick="initiatePayment()">
+          <i class="fas fa-lock"></i> Pay ₹{{ "{:,.0f}".format(total) }}
+        </button>
+        <p style="text-align:center;font-size:0.72rem;color:var(--medium);margin-top:10px;"><i class="fas fa-shield-alt"></i> SSL Secured · PCI Compliant</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+let selectedAddressId = document.querySelector('input[name="address_id"]:checked')?.value || null;
+let newAddressId = null;
+
+document.querySelectorAll('input[name="address_id"]').forEach(r => {
+  r.addEventListener('change', () => { selectedAddressId = r.value; newAddressId = null; });
+});
+document.querySelectorAll('.address-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.address-option').forEach(o => o.style.borderColor = 'var(--border)');
+    opt.style.borderColor = 'var(--rose-gold)';
+  });
+});
+
+async function saveNewAddress() {
+  const addr = {
+    name: document.getElementById('addr-name').value.trim(),
+    mobile: document.getElementById('addr-mobile').value.trim(),
+    address_line1: document.getElementById('addr-line1').value.trim(),
+    address_line2: document.getElementById('addr-line2').value.trim(),
+    city: document.getElementById('addr-city').value.trim(),
+    state: document.getElementById('addr-state').value,
+    pincode: document.getElementById('addr-pincode').value.trim(),
+    is_default: document.getElementById('addr-default').checked
+  };
+  const required = ['name','mobile','address_line1','city','state','pincode'];
+  for (let f of required) { if (!addr[f]) { alert('Please fill in ' + f.replace('_',' ')); return; } }
+  const res = await fetch('/api/address/save', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(addr)});
+  const data = await res.json();
+  if (data.success) { selectedAddressId = data.address.id; newAddressId = data.address.id; alert('Address saved!'); document.getElementById('new-address-form').style.display='none'; }
+  else alert(data.message);
+}
+
+function initiatePayment() {
+  const addrId = selectedAddressId || newAddressId;
+  if (!addrId) { alert('Please select or add a delivery address'); return; }
+  const btn = document.getElementById('pay-btn');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...'; btn.disabled = true;
+
+  const options = {
+    key: '{{ razorpay_key }}',
+    amount: {{ (total * 100)|int }},
+    currency: 'INR',
+    name: 'KOMUDHA Boutique',
+    description: 'Order Payment',
+    order_id: '{{ rz_order_id }}',
+    prefill: { name: '{{ session.user_name }}', contact: '+91{{ session.user_mobile }}' },
+    theme: { color: '#B76E79' },
+    handler: async function(response) {
+      const res = await fetch('/api/order/place', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          address_id: addrId,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_signature: response.razorpay_signature
+        })
+      });
+      const data = await res.json();
+      if (data.success) window.location.href = data.redirect;
+      else { alert('Payment failed: ' + data.message); btn.innerHTML='<i class="fas fa-lock"></i> Pay ₹{{ "{:,.0f}".format(total) }}'; btn.disabled=false; }
+    },
+    modal: { ondismiss: () => { btn.innerHTML='<i class="fas fa-lock"></i> Pay ₹{{ "{:,.0f}".format(total) }}'; btn.disabled=false; } }
+  };
+  new Razorpay(options).open();
+}
+</script>
+{% endblock %}

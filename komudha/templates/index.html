@@ -1,0 +1,361 @@
+{% extends 'base.html' %}
+{% block title %}KOMUDHA Boutique{% endblock %}
+{% block navbar_class %}transparent{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero ──────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-bg-orb hero-bg-orb-1"></div>
+  <div class="hero-bg-orb hero-bg-orb-2"></div>
+  <div class="hero-inner">
+    <div class="hero-content fade-in-up">
+      <div class="hero-badge"><span class="hero-badge-dot"></span> New Collection 2024</div>
+      <h1 class="hero-title">
+        Elegance<br>Woven in<br><em>Every Thread</em>
+      </h1>
+      <p class="hero-subtitle">Discover handpicked ethnic and contemporary fashion for the modern Indian woman. From timeless sarees to chic gowns.</p>
+      <div class="hero-actions">
+        <a href="/shop" class="btn btn-primary btn-lg"><i class="fas fa-shopping-bag"></i> Shop Now</a>
+        <a href="/shop?is_new_arrival=1" class="btn btn-outline btn-lg" style="color:#fff;border-color:rgba(255,255,255,0.4);">New Arrivals</a>
+      </div>
+      <div class="hero-stats">
+        <div><span class="hero-stat-value">5000+</span><span class="hero-stat-label">Happy Customers</span></div>
+        <div><span class="hero-stat-value">500+</span><span class="hero-stat-label">Curated Styles</span></div>
+        <div><span class="hero-stat-value">50+</span><span class="hero-stat-label">Top Brands</span></div>
+      </div>
+    </div>
+    <div class="hero-visual fade-in-up-2">
+      <div class="hero-img-frame">
+        <div class="hero-img-placeholder">
+          <span>👗</span>
+          <p>KOMUDHA</p>
+        </div>
+      </div>
+      <div class="hero-floating-card hero-card-1">
+        <div class="hero-card-label">🛍️ Today's Pick</div>
+        <div class="hero-card-value">Banarasi Silk</div>
+        <div class="hero-card-sub">Starting ₹2,999</div>
+      </div>
+      <div class="hero-floating-card hero-card-2">
+        <div class="hero-card-label">⭐ Rating</div>
+        <div class="hero-card-value">4.9/5</div>
+        <div class="hero-card-sub">2,500+ reviews</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Category Strip ─────────────────────────────────────── -->
+<section class="section-pad-sm bg-cream">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Browse By</span>
+      <h2 class="section-title">Shop By Category</h2>
+      <div class="title-ornament"></div>
+    </div>
+    <div class="categories-grid">
+      {% set cat_icons = ['🥻','👘','👗','🩱','🎀','🌸','✨','💎'] %}
+      {% for cat in categories %}
+      <a href="/category/{{ cat.slug }}" class="category-card">
+        <div class="category-card-inner">
+          <div class="category-card-icon">{{ cat_icons[loop.index0 % cat_icons|length] }}</div>
+        </div>
+        <div class="category-overlay"></div>
+        <div class="category-info">
+          <div class="category-name">{{ cat.name }}</div>
+          <div class="category-count">Explore Collection</div>
+        </div>
+        <div class="category-arrow"><i class="fas fa-arrow-right"></i></div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ── Flash Sale ─────────────────────────────────────────── -->
+{% if flash_sales %}
+<section class="flash-sale">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow" style="color:var(--rose-gold-light)">Limited Time</span>
+      <h2 class="section-title">⚡ Flash Sale</h2>
+      <p class="section-subtitle" style="color:rgba(255,255,255,0.6)">Grab these exclusive deals before they're gone!</p>
+    </div>
+    <div id="flash-timer" data-ends="{{ flash_sales[0].flash_sale_ends }}">
+      <div class="flash-timer">
+        <div class="timer-unit"><span class="timer-value" id="timer-h">00</span><div class="timer-label">Hours</div></div>
+        <div class="timer-sep">:</div>
+        <div class="timer-unit"><span class="timer-value" id="timer-m">00</span><div class="timer-label">Minutes</div></div>
+        <div class="timer-sep">:</div>
+        <div class="timer-unit"><span class="timer-value" id="timer-s">00</span><div class="timer-label">Seconds</div></div>
+      </div>
+    </div>
+    <div class="grid-4">
+      {% for p in flash_sales %}
+      <a href="/product/{{ p.slug }}" class="product-card" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);">
+        <div class="product-img-wrap">
+          {% if p.image_path %}<img src="{{ url_for('static', filename='uploads/' + p.image_path) }}" alt="{{ p.name }}" loading="lazy">{% else %}<div class="product-img-placeholder">👗<span>{{ p.name[:15] }}</span></div>{% endif %}
+          <div class="product-badges"><span class="badge badge-sale">FLASH SALE</span></div>
+        </div>
+        <div class="product-info" style="background:rgba(255,255,255,0.05);">
+          <div class="product-name" style="color:#fff">{{ p.name }}</div>
+          <div class="product-price">
+            <span class="price-current">₹{{ "{:,.0f}".format(p.flash_sale_price or p.sale_price or p.price) }}</span>
+            <span class="price-original" style="color:rgba(255,255,255,0.5)">₹{{ "{:,.0f}".format(p.price) }}</span>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ── New Arrivals ───────────────────────────────────────── -->
+{% if new_arrivals %}
+<section class="section-pad">
+  <div class="container">
+    <div class="flex-between" style="margin-bottom:40px;">
+      <div>
+        <span class="section-eyebrow">Just In</span>
+        <h2 class="section-title" style="margin-bottom:0">New Arrivals</h2>
+      </div>
+      <div class="flex gap-2">
+        <div class="scroll-controls" data-for="new-arrivals-row">
+          <button class="scroll-btn" data-scroll-prev><i class="fas fa-chevron-left"></i></button>
+          <button class="scroll-btn" data-scroll-next><i class="fas fa-chevron-right"></i></button>
+        </div>
+        <a href="/shop?is_new_arrival=1" class="btn btn-outline btn-sm">View All</a>
+      </div>
+    </div>
+    <div data-scroll-row>
+      <div class="scroll-row" id="new-arrivals-row">
+        {% for p in new_arrivals %}
+        <div class="product-card">
+          <div class="product-img-wrap">
+            {% if p.image_path %}<img src="{{ url_for('static', filename='uploads/' + p.image_path) }}" alt="{{ p.name }}" loading="lazy">{% else %}<div class="product-img-placeholder">👗</div>{% endif %}
+            <div class="product-badges"><span class="badge badge-new">New</span></div>
+            <div class="product-actions">
+              <button class="product-action-btn {% if p.id in get_wishlist_ids() %}active{% endif %}" data-quick-wishlist data-product-id="{{ p.id }}" title="Wishlist"><i class="fas fa-heart"></i></button>
+            </div>
+            <div class="quick-add-btn" data-product-id="{{ p.id }}" data-href="/product/{{ p.slug }}">Quick Add</div>
+          </div>
+          <a href="/product/{{ p.slug }}">
+            <div class="product-info">
+              <div class="product-name">{{ p.name }}</div>
+              <div class="product-price">
+                <span class="price-current">₹{{ "{:,.0f}".format(p.sale_price or p.price) }}</span>
+                {% if p.sale_price %}<span class="price-original">₹{{ "{:,.0f}".format(p.price) }}</span>{% endif %}
+              </div>
+            </div>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ── Featured ───────────────────────────────────────────── -->
+{% if featured %}
+<section class="section-pad bg-cream">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Hand-Picked</span>
+      <h2 class="section-title">Featured Collection</h2>
+      <div class="title-ornament"></div>
+      <p class="section-subtitle">Our curators' personal favourites, selected for exceptional quality and style.</p>
+    </div>
+    <div class="grid-4">
+      {% for p in featured %}
+      <div class="product-card animate-on-scroll">
+        <div class="product-img-wrap">
+          {% if p.image_path %}<img src="{{ url_for('static', filename='uploads/' + p.image_path) }}" alt="{{ p.name }}" loading="lazy">{% else %}<div class="product-img-placeholder">✨</div>{% endif %}
+          {% if p.sale_price %}<div class="product-badges"><span class="badge badge-sale">Sale</span></div>{% endif %}
+          <div class="product-actions">
+            <button class="product-action-btn {% if p.id in get_wishlist_ids() %}active{% endif %}" data-quick-wishlist data-product-id="{{ p.id }}"><i class="fas fa-heart"></i></button>
+          </div>
+          <div class="quick-add-btn" data-product-id="{{ p.id }}" data-href="/product/{{ p.slug }}">Add to Cart</div>
+        </div>
+        <a href="/product/{{ p.slug }}">
+          <div class="product-info">
+            <div class="product-name">{{ p.name }}</div>
+            <div class="product-price">
+              <span class="price-current">₹{{ "{:,.0f}".format(p.sale_price or p.price) }}</span>
+              {% if p.sale_price %}<span class="price-original">₹{{ "{:,.0f}".format(p.price) }}</span><span class="price-discount">{{ ((1 - p.sale_price/p.price)*100)|int }}% off</span>{% endif %}
+            </div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="text-center" style="margin-top:40px;"><a href="/shop" class="btn btn-primary btn-lg">Shop All Featured</a></div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ── Trending ───────────────────────────────────────────── -->
+{% if trending %}
+<section class="section-pad">
+  <div class="container">
+    <div class="flex-between" style="margin-bottom:40px;">
+      <div>
+        <span class="section-eyebrow">Trending Now</span>
+        <h2 class="section-title" style="margin-bottom:0">🔥 What's Hot</h2>
+      </div>
+      <a href="/shop?sort=popular" class="btn btn-outline btn-sm">See All Trending</a>
+    </div>
+    <div data-scroll-row>
+      <div class="scroll-row">
+        {% for p in trending %}
+        <div class="product-card">
+          <div class="product-img-wrap">
+            {% if p.image_path %}<img src="{{ url_for('static', filename='uploads/' + p.image_path) }}" alt="{{ p.name }}" loading="lazy">{% else %}<div class="product-img-placeholder">🔥</div>{% endif %}
+            <div class="product-badges"><span class="badge badge-trending">Trending</span></div>
+            <div class="product-actions">
+              <button class="product-action-btn {% if p.id in get_wishlist_ids() %}active{% endif %}" data-quick-wishlist data-product-id="{{ p.id }}"><i class="fas fa-heart"></i></button>
+            </div>
+            <div class="quick-add-btn" data-product-id="{{ p.id }}" data-href="/product/{{ p.slug }}">Quick Add</div>
+          </div>
+          <a href="/product/{{ p.slug }}">
+            <div class="product-info">
+              <div class="product-name">{{ p.name }}</div>
+              <div class="product-price">
+                <span class="price-current">₹{{ "{:,.0f}".format(p.sale_price or p.price) }}</span>
+                {% if p.sale_price %}<span class="price-original">₹{{ "{:,.0f}".format(p.price) }}</span>{% endif %}
+              </div>
+            </div>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ── Best Sellers ───────────────────────────────────────── -->
+{% if best_sellers %}
+<section class="section-pad bg-blush">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Customer Favourites</span>
+      <h2 class="section-title">Best Sellers</h2>
+      <div class="title-ornament"></div>
+    </div>
+    <div class="grid-4">
+      {% for p in best_sellers %}
+      <div class="product-card">
+        <div class="product-img-wrap">
+          {% if p.image_path %}<img src="{{ url_for('static', filename='uploads/' + p.image_path) }}" alt="{{ p.name }}" loading="lazy">{% else %}<div class="product-img-placeholder">⭐</div>{% endif %}
+          <div class="product-badges"><span class="badge badge-bestseller">Best Seller</span></div>
+          <div class="product-actions">
+            <button class="product-action-btn {% if p.id in get_wishlist_ids() %}active{% endif %}" data-quick-wishlist data-product-id="{{ p.id }}"><i class="fas fa-heart"></i></button>
+          </div>
+          <div class="quick-add-btn" data-product-id="{{ p.id }}" data-href="/product/{{ p.slug }}">Add to Cart</div>
+        </div>
+        <a href="/product/{{ p.slug }}">
+          <div class="product-info">
+            <div class="product-name">{{ p.name }}</div>
+            <div class="product-price">
+              <span class="price-current">₹{{ "{:,.0f}".format(p.sale_price or p.price) }}</span>
+              {% if p.sale_price %}<span class="price-original">₹{{ "{:,.0f}".format(p.price) }}</span>{% endif %}
+            </div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ── USP Banner ─────────────────────────────────────────── -->
+<section class="section-pad-sm" style="background:linear-gradient(135deg,var(--cream),var(--soft-pink));">
+  <div class="container">
+    <div class="grid-4">
+      {% for item in [('fas fa-shipping-fast','Free Shipping','On orders above ₹999'),('fas fa-undo-alt','Easy Returns','7-day hassle-free returns'),('fas fa-lock','Secure Payment','100% safe checkout'),('fas fa-star','Premium Quality','Curated & quality assured')] %}
+      <div class="text-center" style="padding:24px;">
+        <div style="font-size:2rem;color:var(--rose-gold);margin-bottom:12px;"><i class="{{ item[0] }}"></i></div>
+        <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:4px;">{{ item[1] }}</div>
+        <div style="font-size:0.82rem;color:var(--medium);">{{ item[2] }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ── Reviews ────────────────────────────────────────────── -->
+{% if reviews %}
+<section class="section-pad">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Testimonials</span>
+      <h2 class="section-title">What Our Customers Say</h2>
+      <div class="title-ornament"></div>
+    </div>
+    <div class="grid-3">
+      {% for r in reviews %}
+      <div class="review-card animate-on-scroll">
+        <div class="review-quote">"</div>
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">{{ r.review or 'Absolutely loved this product! The quality is outstanding and the delivery was super fast. Highly recommend KOMUDHA!' }}</p>
+        <div class="reviewer">
+          <div class="reviewer-avatar">{{ r.user_name[0].upper() if r.user_name else 'A' }}</div>
+          <div>
+            <div class="reviewer-name">{{ r.user_name or 'Anonymous' }}</div>
+            <div class="reviewer-product">{{ r.product_name }}</div>
+            <div class="review-verified"><i class="fas fa-check-circle"></i> Verified Purchase</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ── Newsletter ─────────────────────────────────────────── -->
+<section class="newsletter-section">
+  <div class="container text-center">
+    <span class="section-eyebrow" style="color:var(--rose-gold-light)">Stay Connected</span>
+    <h2 class="newsletter-title">Get Exclusive Offers & Style Tips</h2>
+    <p class="newsletter-subtitle">Subscribe and be the first to know about new arrivals, sales, and fashion inspiration.</p>
+    <form class="newsletter-form newsletter-form-el">
+      <input type="email" name="email" class="newsletter-input" placeholder="Your email address" required>
+      <button type="submit" class="btn btn-primary">Subscribe</button>
+    </form>
+    <p style="color:rgba(255,255,255,0.4);font-size:0.75rem;margin-top:12px;">No spam, ever. Unsubscribe anytime.</p>
+  </div>
+</section>
+
+<!-- ── Instagram ──────────────────────────────────────────── -->
+<section class="section-pad bg-cream">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">@komudha</span>
+      <h2 class="section-title"><i class="fab fa-instagram" style="color:#E1306C;"></i> Follow Us on Instagram</h2>
+      <p class="section-subtitle">Tag us in your photos for a chance to be featured!</p>
+    </div>
+    <div class="instagram-grid">
+      {% for i in range(6) %}
+      <div class="insta-item">
+        <div class="insta-item-inner" style="background:linear-gradient({{ loop.index * 60 }}deg, var(--rose-gold), var(--gold));">
+          <i class="fab fa-instagram" style="font-size:2.5rem;color:rgba(255,255,255,0.3);"></i>
+        </div>
+        <div class="insta-overlay">
+          <i class="fab fa-instagram"></i>
+          <span>View Post</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="text-center" style="margin-top:28px;">
+      <a href="{{ get_setting('instagram_url') or '#' }}" class="btn btn-outline" target="_blank"><i class="fab fa-instagram"></i> Follow @komudha</a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
